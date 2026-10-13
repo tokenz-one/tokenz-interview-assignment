@@ -1,0 +1,20 @@
+# Mill
+out/
+
+# Scala tooling
+.bsp/
+.bloop/
+.metals/
+.scala-build/
+metals.sbt
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+
+# Logs
+*.log

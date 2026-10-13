@@ -1,0 +1,25 @@
+package build
+
+import build.V
+import mill._
+import scalalib._
+
+// scalafmt: { maxColumn = 300, align.preset = most }
+
+object D {
+  val zio                = mvn"dev.zio::zio:${V.zio}"
+  val zioPrelude         = mvn"dev.zio::zio-prelude:${V.zioPrelude}"
+  val zioHttp            = mvn"dev.zio::zio-http:${V.zioHttp}"
+  val zioConfig          = mvn"dev.zio::zio-config:${V.zioConfig}"
+  val zioConfigTypesafe  = mvn"dev.zio::zio-config-typesafe:${V.zioConfig}"
+  val zioConfigMagnolia  = mvn"dev.zio::zio-config-magnolia:${V.zioConfig}"
+  val zioLogging         = mvn"dev.zio::zio-logging:${V.zioLogging}"
+  val zioTest            = mvn"dev.zio::zio-test:${V.zio}"
+  val zioTestSbt         = mvn"dev.zio::zio-test-sbt:${V.zio}"
+  val sttpClientZio      = mvn"com.softwaremill.sttp.client3::zio:${V.sttp}"
+  val jsoniterCore       = mvn"com.github.plokhotnyuk.jsoniter-scala::jsoniter-scala-core:${V.jsoniter}"
+  val jsoniterMacros     = mvn"com.github.plokhotnyuk.jsoniter-scala::jsoniter-scala-macros:${V.jsoniter}"
+  val tapirZio           = mvn"com.softwaremill.sttp.tapir::tapir-zio:${V.tapir}"
+  val tapirZioHttpServer = mvn"com.softwaremill.sttp.tapir::tapir-zio-http-server:${V.tapir}"
+  val tapirJsoniter      = mvn"com.softwaremill.sttp.tapir::tapir-jsoniter-scala:${V.tapir}"
+}

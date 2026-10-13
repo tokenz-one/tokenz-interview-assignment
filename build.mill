@@ -1,0 +1,115 @@
+//| mill-version: 1.1.9-jvm
+//| mill-jvm-version: zulu:26
+
+package build
+
+import build.D
+import build.V
+import mill._
+import mill.scalalib.TestModule.ZioTest
+import mill.scalalib._
+import mill.scalalib.scalafmt.ScalafmtModule
+
+trait BaseModule extends ScalaModule {
+  def scalaVersion = V.scala
+
+  override def sources = Task.Sources("src")
+
+  override def resources = Task.Sources("resources")
+
+  def scalacOptions = Seq(
+    "-old-syntax",
+    "-no-indent",
+    "-Wconf:id=E029:error", // Pattern match exhaustivity
+    "-Wconf:id=E030:error", // Match case unreachable
+    "-encoding",
+    "utf8",
+    "-deprecation",
+    "-feature",
+    "-unchecked",
+    "-Wunused:imports,privates,locals",
+    "-Wvalue-discard",
+    "-Wnonunit-statement",
+  )
+
+  def forkArgs = Task {
+    Seq(
+      "-Dsun.misc.unsafe.memory.access=allow",
+      "--enable-native-access=ALL-UNNAMED",
+    )
+  }
+
+}
+
+trait CommonModule extends BaseModule with ScalafmtModule {
+
+  override def assemblyRules = {
+    import mill.scalalib.Assembly.Rule
+    Seq(
+      Rule.Append("reference.conf", separator = "\n"),
+      Rule.AppendPattern("META-INF/services/.*", separator = "\n"),
+      Rule.ExcludePattern("META-INF/.*\\.SF"),
+      Rule.ExcludePattern("META-INF/.*\\.RSA"),
+      Rule.ExcludePattern("META-INF/.*\\.DSA"),
+      Rule.ExcludePattern("META-INF/MANIFEST.MF"),
+      Rule.Exclude("module-info.class"),
+    )
+  }
+
+}
+
+trait Tests extends CommonModule with ZioTest { this: ScalaModule#ScalaTests =>
+  override def sources = Task.Sources("src")
+
+  override def resources = Task.Sources("resources")
+
+  def mvnDeps = super.mvnDeps() ++ Seq(D.zioTest, D.zioTestSbt)
+
+  override def scalaVersion = V.scala
+}
+
+object `package` extends Module {
+  override def moduleDir = super.moduleDir / "modules"
+
+  object data extends CommonModule {
+    def mvnDeps = Seq(D.zio, D.zioPrelude)
+
+    object test extends ScalaTests with Tests
+  }
+
+  object stores extends CommonModule {
+    def moduleDeps = Seq(data)
+
+    object test extends ScalaTests with Tests
+  }
+
+  object providers extends CommonModule {
+    def moduleDeps = Seq(data)
+
+    def mvnDeps = Seq(D.sttpClientZio, D.jsoniterCore, D.jsoniterMacros, D.zioConfig, D.zioConfigMagnolia)
+
+    object test extends ScalaTests with Tests
+  }
+
+  object scenarios extends CommonModule {
+    def moduleDeps = Seq(stores, providers)
+
+    object test extends ScalaTests with Tests
+  }
+
+  object api extends CommonModule {
+    def moduleDeps = Seq(scenarios)
+
+    def mvnDeps = Seq(D.tapirZio, D.tapirZioHttpServer, D.tapirJsoniter, D.jsoniterCore, D.jsoniterMacros)
+
+    object test extends ScalaTests with Tests
+  }
+
+  object app extends CommonModule {
+    def moduleDeps = Seq(api)
+
+    def mvnDeps = Seq(D.zioHttp, D.zioConfig, D.zioConfigTypesafe, D.zioConfigMagnolia, D.zioLogging)
+
+    def mainClass = Some("tokenz.app.Main")
+  }
+}

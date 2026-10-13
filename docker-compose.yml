@@ -1,0 +1,11 @@
+services:
+  proxy:
+    image: tokenzone/tokenz-payment-proxy:1.0.0
+    ports:
+      - "8090:8090"
+    environment:
+      RPS_LIMIT: "5"
+      FAILURE_ONE_IN: "10"
+      LATENCY_MS: "100"
+      MAX_BATCH_SIZE: "20"
+      PROVIDER_ID: "acme"
